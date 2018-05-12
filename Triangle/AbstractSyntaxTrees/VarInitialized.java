@@ -1,7 +1,3 @@
-// Added for the Proyect Number 1.
-// Syntax analyzer.
-// 04/25/2018
-
 package Triangle.AbstractSyntaxTrees;
 
 import Triangle.SyntacticAnalyzer.SourcePosition;

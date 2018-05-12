@@ -54,6 +54,10 @@ public final class Checker implements Visitor {
   public Object visitNothingCommand(NothingCommand ast, Object o) {
     return null;
   }
+  
+  public Object visitEmptyCommand(EmptyCommand ast, Object o) {
+    return null;
+  }
 
   public Object visitIfCommand(IfCommand ast, Object o) {
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);

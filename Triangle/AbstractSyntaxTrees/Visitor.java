@@ -24,6 +24,7 @@ public interface Visitor {
   public abstract Object visitNothingCommand(NothingCommand ast, Object o);
   public abstract Object visitElsIfCommand(ElsIfCommand ast, Object o);
   public abstract Object visitForCommand(ForCommand ast, Object o);
+  public abstract Object visitEmptyCommand(EmptyCommand ast, Object o);
   public abstract Object visitIfCommand(IfCommand ast, Object o);
   public abstract Object visitLetCommand(LetCommand ast, Object o);
   public abstract Object visitSequentialCommand(SequentialCommand ast, Object o);
@@ -113,5 +114,4 @@ public interface Visitor {
 
   // Programs
   public abstract Object visitProgram(Program ast, Object o);
-
 }

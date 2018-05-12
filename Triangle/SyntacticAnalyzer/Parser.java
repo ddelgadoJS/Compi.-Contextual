@@ -12,24 +12,6 @@
  * of the authors.
  */
 
-/*
-Modifications to this file
-Added:
--nothing
--loop while Expression do Command end
--loop until Expression do Command end
--loop do Command while Expression end
--loop for Identifier := Expression to Expression do Command end
--let Declaration in Command end
--if Expression then Command (elsif Expression then Command)* else Command end
-
-Deletes:
--begin Command end
--let Declaration in single-Command
--if Expression then single-Command else single-Command
--while Expression do single-Command
-*/
-
 package Triangle.SyntacticAnalyzer;
 
 import Triangle.ErrorReporter;
@@ -353,7 +335,40 @@ public class Parser {
        commandAST = new IfCommand(eAST, c1AST,c2AST, commandPos); // se crea estructura para ifCommand
       }
       break;
+      
+    //Eliminar "begin" Command "end"
 
+    /*   case Token.BEGIN:
+      acceptIt();
+      commandAST = parseCommand();
+      accept(Token.END);
+      break;
+    //Eliminar "let" Declaration "in" single-Command
+    
+    case Token.LET:
+      {
+        acceptIt();
+        Declaration dAST = parseDeclaration();
+        accept(Token.IN);
+        Command cAST = parseSingleCommand();
+        finish(commandPos);
+        commandAST = new LetCommand(dAST, cAST, commandPos);
+      }
+      break;
+    // Eliminar "if" Expression "then" single-Command "else" | "while" Expression "do" single-Command
+    case Token.IF:
+      {
+        acceptIt();
+        Expression eAST = parseExpression();
+        accept(Token.THEN);
+        Command c1AST = parseSingleCommand();
+        accept(Token.ELSE);
+        Command c2AST = parseSingleCommand();
+        finish(commandPos);
+        commandAST = new IfCommand(eAST, c1AST, c2AST, commandPos);
+      }
+      break;
+    */
     case Token.NOTHING: // caso para comando nothing
     {
         acceptIt(); // se acepta el token

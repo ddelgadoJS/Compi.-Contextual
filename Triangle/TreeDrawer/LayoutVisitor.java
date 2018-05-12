@@ -80,6 +80,11 @@ public class LayoutVisitor implements Visitor {
   public Object visitElsIfCommand(ElsIfCommand ast, Object o) {
       return layoutTernary("ElsIfCommand",ast.E1,ast.C,ast.C2);
   }
+  
+  // New
+  public Object visitEmptyCommand(EmptyCommand ast, Object obj) {
+    return layoutNullary("EmptyCom.");
+  }
 
   // Expressions
   public Object visitArrayExpression(ArrayExpression ast, Object obj) {
