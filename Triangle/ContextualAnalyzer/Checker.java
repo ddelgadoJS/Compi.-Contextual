@@ -902,13 +902,7 @@ public final class Checker implements Visitor {
 
     @Override
     public Object visitVarInitialized(VarInitialized ast, Object o) {
-        TypeDenoter eType = (TypeDenoter) ast.E.visit(this,null);
-        ast.I.type = eType;
-        idTable.enter (ast.I.spelling, ast);
-        if (ast.duplicated)
-          reporter.reportError ("identifier \"%\" already declared", ast.I.spelling, ast.position);
-
-        return null;
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
