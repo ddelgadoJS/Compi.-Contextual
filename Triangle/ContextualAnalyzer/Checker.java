@@ -897,7 +897,12 @@ public final class Checker implements Visitor {
 
     @Override
     public Object visitElsIfCommand(ElsIfCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        TypeDenoter eType = (TypeDenoter) ast.E1.visit(this, null);
+        if (! eType.equals(StdEnvironment.booleanType))
+          reporter.reportError("Boolean expression expected here", "", ast.E1.position);
+        ast.C.visit(this, null);
+        ast.C2.visit(this, null);
+        return null;
     }
 
     @Override
