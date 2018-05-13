@@ -918,11 +918,41 @@ public final class Checker implements Visitor {
 
     @Override
     public Object visitPrivateDeclaration(PrivateDeclaration ast, Object o) {
+        int privateDeclarations = 0;
+        int publicDeclarations = 0;
+        
+        privateDeclarations = sumPrivateDeclarations(ast.D, privateDeclarations);
+        publicDeclarations = sumPublicDeclarations(ast.D2, publicDeclarations);
+        
         idTable.openScope();
         ast.D.visit(this, null);
         ast.D2.visit(this, null);
-        idTable.closeScope();
+        idTable.closePrivateScope(privateDeclarations, publicDeclarations);
         return null;
+    }
+    
+    // Auxiliary function of visitPrivateDeclaration.
+    public int sumPrivateDeclarations(Declaration declaration_, int privateDeclarations) {
+        if (declaration_ instanceof SequentialDeclaration) {
+            sumPrivateDeclarations(((SequentialDeclaration) declaration_).D1, privateDeclarations);
+            privateDeclarations++;
+        } else {
+            privateDeclarations++;
+        }
+        
+        return privateDeclarations;
+    }
+    
+    // Auxiliary function of visitPrivateDeclaration.
+    public int sumPublicDeclarations(Declaration declaration_, int publicDeclarations) {
+        if (declaration_ instanceof SequentialDeclaration) {
+            sumPublicDeclarations(((SequentialDeclaration) declaration_).D1, publicDeclarations);
+            publicDeclarations++;
+        } else {
+            publicDeclarations++;
+        }
+        
+        return publicDeclarations;
     }
 
     @Override
