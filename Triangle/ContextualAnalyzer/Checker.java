@@ -234,10 +234,14 @@ public final class Checker implements Visitor {
 
   public Object visitFuncDeclaration(FuncDeclaration ast, Object o) {
     ast.T = (TypeDenoter) ast.T.visit(this, null);
-    idTable.enter (ast.I.spelling, ast); // permits recursion
-    if (ast.duplicated)
-      reporter.reportError ("identifier \"%\" already declared",
-                            ast.I.spelling, ast.position);
+    
+    if (o == null) {
+        idTable.enter (ast.I.spelling, ast); // permits recursion
+        if (ast.duplicated)
+          reporter.reportError ("identifier \"%\" already declared",
+                                ast.I.spelling, ast.position);
+    }    
+    
     idTable.openScope();
     ast.FPS.visit(this, null);
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
@@ -249,10 +253,13 @@ public final class Checker implements Visitor {
   }
 
   public Object visitProcDeclaration(ProcDeclaration ast, Object o) {
-    idTable.enter (ast.I.spelling, ast); // permits recursion
-    if (ast.duplicated)
-      reporter.reportError ("identifier \"%\" already declared",
-                            ast.I.spelling, ast.position);
+    if (o == null) {
+        idTable.enter (ast.I.spelling, ast); // permits recursion
+        if (ast.duplicated)
+          reporter.reportError ("identifier \"%\" already declared",
+                                ast.I.spelling, ast.position);
+    }
+      
     idTable.openScope();
     ast.FPS.visit(this, null);
     ast.C.visit(this, null);
