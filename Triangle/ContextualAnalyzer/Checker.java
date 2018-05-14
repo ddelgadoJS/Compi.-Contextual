@@ -969,7 +969,10 @@ public final class Checker implements Visitor {
 
     @Override
     public Object visitProcFuncs(ProcFuncs ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ast.D1.visit(this, true);
+        ast.D2.visit(this, true);
+        
+        return null;
     }
 
     @Override
