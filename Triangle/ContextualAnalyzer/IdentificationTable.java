@@ -53,24 +53,25 @@ public final class IdentificationTable {
   }
   
   // New
-  public void closePrivateScope (int privateDeclarations, int publicDeclarations) {
-      IdEntry publicDeclarations_ = this.latest;
-      IdEntry privateDeclarations_ = publicDeclarations_.previous;
+  public void closePrivateScope (int privateDeclarations, int privateInDeclarations) {
+      IdEntry privateInDeclarations_ = this.latest;
       
-      // Public declarations
-      for (int i = publicDeclarations; i > 1; i--) {
-          publicDeclarations_.level--;
-          publicDeclarations_ = publicDeclarations_.previous;
+      // "Private in" declarations
+      for (int i = privateInDeclarations; i > 1; i--) {
+          privateInDeclarations_.level--;
+          privateInDeclarations_ = privateInDeclarations_.previous;
       }
       
-      publicDeclarations_.level--;
+      privateInDeclarations_.level--;
+      
+      IdEntry privateDeclarations_ = privateInDeclarations_.previous;
       
       // Private declarations
       for (int i = privateDeclarations; i > 1; i--) {
           privateDeclarations_ = privateDeclarations_.previous;
       }
       
-      publicDeclarations_.previous = privateDeclarations_.previous;
+      privateInDeclarations_.previous = privateDeclarations_.previous;
       this.level--;
   }
 
