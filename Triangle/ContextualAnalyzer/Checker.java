@@ -925,7 +925,12 @@ public final class Checker implements Visitor {
 
     @Override
     public Object visitArrayTypeDenoterStatic(ArrayTypeDenoterStatic ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ast.T = (TypeDenoter) ast.T.visit(this, null);
+        if (Integer.parseInt(ast.IL.spelling) > Integer.parseInt(ast.IL2.spelling))
+          reporter.reportError("second integer must be greater than the first one","",ast.getPosition());
+        else if ((Integer.valueOf(ast.IL.spelling).intValue()) == 0)
+          reporter.reportError ("arrays must not be empty", "", ast.IL.position);
+        return ast;
     }
 
     @Override
