@@ -82,6 +82,7 @@ public final class Checker implements Visitor {
     return null;
   }
 
+  @Override
   public Object visitWhileCommand(WhileCommand ast, Object o) {
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
     if (! eType.equals(StdEnvironment.booleanType))
@@ -877,17 +878,29 @@ public final class Checker implements Visitor {
 
     @Override
     public Object visitUntilCommand(UntilCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+	    if (! eType.equals(StdEnvironment.booleanType))
+	      reporter.reportError("Boolean expression expected here", "", ast.E.position);
+	    ast.C.visit(this, null);
+	    return null;
     }
 
     @Override
     public Object visitDoUntilCommand(DoUntilCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+	    if (! eType.equals(StdEnvironment.booleanType))
+	      reporter.reportError("Boolean expression expected here", "", ast.E.position);
+	    ast.C.visit(this, null);
+	    return null;
     }
 
     @Override
     public Object visitDoWhileCommand(DoWhileCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+	    if (! eType.equals(StdEnvironment.booleanType))
+	      reporter.reportError("Boolean expression expected here", "", ast.E.position);
+	    ast.C.visit(this, null);
+	    return null;
     }
 
     @Override
