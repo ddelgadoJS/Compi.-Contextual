@@ -673,7 +673,7 @@ public final class Checker implements Visitor {
       else {
         if (! eType.equals(StdEnvironment.integerType))
           reporter.reportError ("Integer expression expected here", "",
-				ast.E.position);
+        ast.E.position);
         ast.type = ((ArrayTypeDenoter) vType).T;
       }
     }
@@ -931,15 +931,15 @@ public final class Checker implements Visitor {
     @Override
     public Object visitPrivateDeclaration(PrivateDeclaration ast, Object o) {
         int privateDeclarations = 0;
-        int publicDeclarations = 0;
+        int privateInDeclarations = 0;
         
         privateDeclarations = sumPrivateDeclarations(ast.D, privateDeclarations);
-        publicDeclarations = sumPublicDeclarations(ast.D2, publicDeclarations);
+        privateInDeclarations = sumPrivateInDeclarations(ast.D2, privateInDeclarations);
         
         idTable.openScope();
         ast.D.visit(this, null);
         ast.D2.visit(this, null);
-        idTable.closePrivateScope(privateDeclarations, publicDeclarations);
+        idTable.closePrivateScope(privateDeclarations, privateInDeclarations);
         return null;
     }
     
@@ -947,6 +947,9 @@ public final class Checker implements Visitor {
     public int sumPrivateDeclarations(Declaration declaration_, int privateDeclarations) {
         if (declaration_ instanceof SequentialDeclaration) {
             sumPrivateDeclarations(((SequentialDeclaration) declaration_).D1, privateDeclarations);
+            privateDeclarations++;
+        } else if (declaration_ instanceof ProcFuncs) {
+            sumPrivateDeclarations(((ProcFuncs) declaration_).D1, privateDeclarations);
             privateDeclarations++;
         } else {
             privateDeclarations++;
@@ -956,15 +959,18 @@ public final class Checker implements Visitor {
     }
     
     // Auxiliary function of visitPrivateDeclaration.
-    public int sumPublicDeclarations(Declaration declaration_, int publicDeclarations) {
+    public int sumPrivateInDeclarations(Declaration declaration_, int privateInDeclarations) {
         if (declaration_ instanceof SequentialDeclaration) {
-            sumPublicDeclarations(((SequentialDeclaration) declaration_).D1, publicDeclarations);
-            publicDeclarations++;
+            sumPrivateInDeclarations(((SequentialDeclaration) declaration_).D1, privateInDeclarations);
+            privateInDeclarations++;
+        } else if (declaration_ instanceof ProcFuncs) {
+            sumPrivateInDeclarations(((ProcFuncs) declaration_).D1, privateInDeclarations);
+            privateInDeclarations++;
         } else {
-            publicDeclarations++;
+            privateInDeclarations++;
         }
         
-        return publicDeclarations;
+        return privateInDeclarations;
     }
 
     @Override
