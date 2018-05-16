@@ -103,8 +103,11 @@ public final class Checker implements Visitor {
     }
     
     idTable.openScope();// open the scope for what is going to be declare in the table 
-    ast.I.visit(this, null);
-    idTable.enter(ast.I.spelling,new VarDeclaration(ast.I,eType,ast.position)); // esta declarada la variable entera en la tabla 
+    VarDeclaration decl = (VarDeclaration) ast.I.visit(this, null);
+    if (! decl.T.equals(StdEnvironment.integerType)){
+            reporter.reportError("Integer declaration expected here", "", ast.I.position);
+    }
+    idTable.enter(decl.toString(),decl);
     ast.C.visit(this, null);
     idTable.closeScope();// close the scope for what is going to be declare in the table 
     return null;
