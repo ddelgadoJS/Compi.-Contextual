@@ -885,29 +885,29 @@ public final class Checker implements Visitor {
 
     @Override
     public Object visitUntilCommand(UntilCommand ast, Object o) {
-        TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
-	    if (! eType.equals(StdEnvironment.booleanType))
-	      reporter.reportError("Boolean expression expected here", "", ast.E.position);
-	    ast.C.visit(this, null);
-	    return null;
+      TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+      if (! eType.equals(StdEnvironment.booleanType))
+        reporter.reportError("Boolean expression expected here", "", ast.E.position);
+      ast.C.visit(this, null);
+      return null;
     }
 
     @Override
     public Object visitDoUntilCommand(DoUntilCommand ast, Object o) {
-        TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
-	    if (! eType.equals(StdEnvironment.booleanType))
-	      reporter.reportError("Boolean expression expected here", "", ast.E.position);
-	    ast.C.visit(this, null);
-	    return null;
+      TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+      if (! eType.equals(StdEnvironment.booleanType))
+        reporter.reportError("Boolean expression expected here", "", ast.E.position);
+      ast.C.visit(this, null);
+      return null;
     }
 
     @Override
     public Object visitDoWhileCommand(DoWhileCommand ast, Object o) {
-        TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
-	    if (! eType.equals(StdEnvironment.booleanType))
-	      reporter.reportError("Boolean expression expected here", "", ast.E.position);
-	    ast.C.visit(this, null);
-	    return null;
+      TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+      if (! eType.equals(StdEnvironment.booleanType))
+        reporter.reportError("Boolean expression expected here", "", ast.E.position);
+      ast.C.visit(this, null);
+      return null;
     }
 
     @Override
