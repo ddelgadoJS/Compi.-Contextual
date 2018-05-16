@@ -90,7 +90,25 @@ public final class Checker implements Visitor {
     ast.C.visit(this, null);
     return null;
   }
+  @Override
+   public Object visitForCommand(ForCommand ast, Object o) {
+    TypeDenoter eType  = (TypeDenoter) ast.E1.visit(this, null);
+    TypeDenoter eType1 = (TypeDenoter) ast.E2.visit(this, null);
 
+    if (! eType.equals(StdEnvironment.integerType)){
+            reporter.reportError("Integer expression expected here", "", ast.E1.position);
+    }
+    if (! eType1.equals(StdEnvironment.integerType)){
+            reporter.reportError("Integer expression expected here", "", ast.E2.position);
+    }
+    
+    idTable.openScope();// open the scope for what is going to be declare in the table 
+    ast.I.visit(this, null);
+    idTable.enter(ast.I.spelling,new VarDeclaration(ast.I,eType,ast.position)); // esta declarada la variable entera en la tabla 
+    ast.C.visit(this, null);
+    idTable.closeScope();// close the scope for what is going to be declare in the table 
+    return null;
+  }
   // Expressions
 
   // Returns the TypeDenoter denoting the type of the expression. Does
@@ -908,11 +926,6 @@ public final class Checker implements Visitor {
         reporter.reportError("Boolean expression expected here", "", ast.E.position);
       ast.C.visit(this, null);
       return null;
-    }
-
-    @Override
-    public Object visitForCommand(ForCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
