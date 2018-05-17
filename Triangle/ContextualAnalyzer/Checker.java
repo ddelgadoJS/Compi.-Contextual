@@ -91,6 +91,7 @@ public final class Checker implements Visitor {
   }
   @Override
    public Object visitForCommand(ForCommand ast, Object o) {
+    // outside of the scope of the variable declaration
     TypeDenoter eType  = (TypeDenoter) ast.E1.visit(this, null);
     TypeDenoter eType1 = (TypeDenoter) ast.E2.visit(this, null);
 
@@ -103,14 +104,66 @@ public final class Checker implements Visitor {
     
     idTable.openScope();// open the scope for what is going to be declare in the table 
     VarDeclaration decl = (VarDeclaration) ast.I.visit(this, null);
+    
     if (! decl.T.equals(StdEnvironment.integerType)){
             reporter.reportError("Integer declaration expected here", "", ast.I.position);
     }
     idTable.enter(decl.toString(),decl);
-    ast.C.visit(this, null);
+    ////////////// Check if the ID is not at the left side of assigment
+    Command c = (Command) ast.C;
+    ast.C.visit(this,null);
+     
+    int resultado=0;
+    if(c instanceof SequentialCommand){
+        Command scq1 = ((SequentialCommand) ((Command) c)).C1;
+        Command scq2 = ((SequentialCommand) ((Command) c)).C2;
+         if(scq1 instanceof AssignCommand || scq2 instanceof AssignCommand){
+             resultado= 1;
+         }
+    }
+    else if(c instanceof AssignCommand){
+        SimpleVname svn  = (SimpleVname) ((AssignCommand) c).V;
+        if(ast.I.spelling.equals(svn.I.spelling)){
+            resultado= 1;
+        }
+        else{
+            resultado= -1;
+        }
+       
+    }
+    else if(c instanceof CallCommand){
+        ActualParameterSequence cc=  ((CallCommand) c).APS;
+        if(cc instanceof SingleActualParameterSequence){
+            VarActualParameter va = (VarActualParameter) ((SingleActualParameterSequence) cc).AP;
+            SimpleVname svn= (SimpleVname) va.V;
+            if(svn.I.spelling.equals(ast.I.spelling)){
+                resultado= 2;
+            }
+        }
+        
+        else if(cc instanceof MultipleActualParameterSequence){
+         VarActualParameter map = (VarActualParameter) ((SingleActualParameterSequence) cc).AP;
+         SimpleVname svn= (SimpleVname) map.V;
+         if(svn.I.spelling.equals(ast.I.spelling)){
+             resultado= 2;
+         }
+        }
+    }
+    else{
+        resultado= -1;
+    }
+    /////////////////
+    if(resultado == 1){
+        reporter.reportError("Variable can not be used here", "", ast.C.position);
+    }
+    if(resultado == 2){
+        reporter.reportError("Variable can not be passed by reference here", "", ast.C.position);
+    }
+    
     idTable.closeScope();// close the scope for what is going to be declare in the table 
     return null;
   }
+   
   // Expressions
 
   // Returns the TypeDenoter denoting the type of the expression. Does
