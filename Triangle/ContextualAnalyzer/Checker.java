@@ -37,7 +37,6 @@ public final class Checker implements Visitor {
 
 
   public Object visitCallCommand(CallCommand ast, Object o) {
-
     Declaration binding = (Declaration) ast.I.visit(this, null);
     if (binding == null)
       reportUndeclared(ast.I);
@@ -225,7 +224,7 @@ public final class Checker implements Visitor {
 
   public Object visitConstDeclaration(ConstDeclaration ast, Object o) {
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
-    idTable.enter(ast.I.spelling, ast);
+    idTable.enter(ast.I.spelling,  ast);
     if (ast.duplicated)
       reporter.reportError ("identifier \"%\" already declared",
                             ast.I.spelling, ast.position);
@@ -368,11 +367,15 @@ public final class Checker implements Visitor {
   }
 
   public Object visitVarFormalParameter(VarFormalParameter ast, Object o) {
-    ast.T = (TypeDenoter) ast.T.visit(this, null);
-    idTable.enter (ast.I.spelling, ast);
-    if (ast.duplicated)
-      reporter.reportError ("duplicated formal parameter \"%\"",
-                            ast.I.spelling, ast.position);
+    if (o != null){
+        ast.T = (TypeDenoter) ast.T.visit(this, null);
+    }else {
+        ast.T = (TypeDenoter) ast.T.visit(this, null);
+        idTable.enter (ast.I.spelling, ast);
+        if (ast.duplicated)
+        reporter.reportError ("duplicated formal parameter \"%\"",
+                                ast.I.spelling, ast.position);
+    }
     return null;
   }
 
@@ -469,7 +472,6 @@ public final class Checker implements Visitor {
 
   public Object visitVarActualParameter(VarActualParameter ast, Object o) {
     FormalParameter fp = (FormalParameter) o;
-
     TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
     if (! ast.V.variable)
       reporter.reportError ("actual parameter is not a variable", "",
@@ -925,13 +927,96 @@ public final class Checker implements Visitor {
         return null;
     }
 
-    @Override
     public Object visitProcFuncs(ProcFuncs ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (ast.D2 instanceof ProcDeclaration) {
+            addIdentifierProc((ProcDeclaration) ast.D2);
+        } else {
+            addIdentifierFunc((FuncDeclaration) ast.D2);
+        }
+        Declaration dec = (Declaration) ast.D1;
+        while (dec instanceof ProcFuncs){
+            ProcFuncs pf = (ProcFuncs)dec;
+            if (pf.D2 instanceof ProcDeclaration) {
+                addIdentifierProc((ProcDeclaration) pf.D2);
+            } else {
+                addIdentifierFunc((FuncDeclaration) pf.D2);
+            }
+            dec = pf.D1;
+        }
+        if (dec instanceof ProcDeclaration) {
+            addIdentifierProc((ProcDeclaration) dec);
+        } else {
+            addIdentifierFunc((FuncDeclaration) dec);
+        }
+        if (ast.D2 instanceof ProcDeclaration) {
+            visitProc((ProcDeclaration) ast.D2, o);
+        } else {
+            visitFunc((FuncDeclaration) ast.D2, o);
+        }
+        dec = (Declaration) ast.D1;
+        while (dec instanceof ProcFuncs){
+            ProcFuncs pf = (ProcFuncs)dec;
+            if (pf.D2 instanceof ProcDeclaration) {
+                visitProc((ProcDeclaration) pf.D2, o);
+            } else {
+                visitFunc((FuncDeclaration) pf.D2, o);
+            }
+            dec = pf.D1;
+        }
+        if (dec instanceof ProcDeclaration) {
+            visitProc((ProcDeclaration) dec, o);
+        } else {
+            visitFunc((FuncDeclaration) dec, o);
+        }
+        //ast.D1.visit(this, null);
+        //ast.D2.visit(this, null);
+        return null;
     }
 
     @Override
     public Object visitRecDeclaration(RecDeclaration ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ast.D.visit(this, null);
+        return null;
+    }
+    
+    // funciones auxiliares para agregar identificadores en procs y funcs
+    public Object addIdentifierFunc(FuncDeclaration ast) {
+        idTable.enter (ast.I.spelling, ast); // permits recursion
+        if (ast.duplicated)
+            reporter.reportError ("func identifier \"%\" already declared",
+                    ast.I.spelling, ast.position);
+        //ast.FPS.visit(this, true);
+        ast.FPS.visit(this, true);
+        ast.T = (TypeDenoter) ast.T.visit(this, null);
+        return null;
+    }
+
+    public Object addIdentifierProc(ProcDeclaration ast) {
+        idTable.enter (ast.I.spelling, ast); // permits recursion
+        if (ast.duplicated)
+            reporter.reportError ("proc identifier \"%\" already declared",
+                            ast.I.spelling, ast.position);
+        ast.FPS.visit(this, true);
+        return null;
+    }
+    
+    public Object visitFunc (FuncDeclaration ast, Object o) {
+        //ast.T = (TypeDenoter) ast.T.visit(this, null);
+        idTable.openScope();
+        ast.FPS.visit(this, null);
+        TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+        idTable.closeScope();
+        if (! ast.T.equals(eType))
+            reporter.reportError ("body of function \"%\" has wrong type",
+                ast.I.spelling, ast.E.position);
+        return null;
+    }
+    
+    public Object visitProc (ProcDeclaration ast, Object o) {
+        idTable.openScope();
+        ast.FPS.visit(this, null);
+        ast.C.visit(this, null);
+        idTable.closeScope();
+        return null;
     }
 }
