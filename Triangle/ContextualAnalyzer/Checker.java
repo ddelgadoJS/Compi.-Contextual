@@ -81,6 +81,7 @@ public final class Checker implements Visitor {
     return null;
   }
 
+  @Override
   public Object visitWhileCommand(WhileCommand ast, Object o) {
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
     if (! eType.equals(StdEnvironment.booleanType))
@@ -88,7 +89,28 @@ public final class Checker implements Visitor {
     ast.C.visit(this, null);
     return null;
   }
+  @Override
+   public Object visitForCommand(ForCommand ast, Object o) {
+    TypeDenoter eType  = (TypeDenoter) ast.E1.visit(this, null);
+    TypeDenoter eType1 = (TypeDenoter) ast.E2.visit(this, null);
 
+    if (! eType.equals(StdEnvironment.integerType)){
+            reporter.reportError("Integer expression expected here", "", ast.E1.position);
+    }
+    if (! eType1.equals(StdEnvironment.integerType)){
+            reporter.reportError("Integer expression expected here", "", ast.E2.position);
+    }
+    
+    idTable.openScope();// open the scope for what is going to be declare in the table 
+    VarDeclaration decl = (VarDeclaration) ast.I.visit(this, null);
+    if (! decl.T.equals(StdEnvironment.integerType)){
+            reporter.reportError("Integer declaration expected here", "", ast.I.position);
+    }
+    idTable.enter(decl.toString(),decl);
+    ast.C.visit(this, null);
+    idTable.closeScope();// close the scope for what is going to be declare in the table 
+    return null;
+  }
   // Expressions
 
   // Returns the TypeDenoter denoting the type of the expression. Does
@@ -233,10 +255,14 @@ public final class Checker implements Visitor {
 
   public Object visitFuncDeclaration(FuncDeclaration ast, Object o) {
     ast.T = (TypeDenoter) ast.T.visit(this, null);
-    idTable.enter (ast.I.spelling, ast); // permits recursion
-    if (ast.duplicated)
-      reporter.reportError ("identifier \"%\" already declared",
-                            ast.I.spelling, ast.position);
+    
+    if (o == null) {
+        idTable.enter (ast.I.spelling, ast); // permits recursion
+        if (ast.duplicated)
+          reporter.reportError ("identifier \"%\" already declared",
+                                ast.I.spelling, ast.position);
+    }    
+    
     idTable.openScope();
     ast.FPS.visit(this, null);
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
@@ -248,10 +274,13 @@ public final class Checker implements Visitor {
   }
 
   public Object visitProcDeclaration(ProcDeclaration ast, Object o) {
-    idTable.enter (ast.I.spelling, ast); // permits recursion
-    if (ast.duplicated)
-      reporter.reportError ("identifier \"%\" already declared",
-                            ast.I.spelling, ast.position);
+    if (o == null) {
+        idTable.enter (ast.I.spelling, ast); // permits recursion
+        if (ast.duplicated)
+          reporter.reportError ("identifier \"%\" already declared",
+                                ast.I.spelling, ast.position);
+    }
+      
     idTable.openScope();
     ast.FPS.visit(this, null);
     ast.C.visit(this, null);
@@ -668,7 +697,7 @@ public final class Checker implements Visitor {
       else {
         if (! eType.equals(StdEnvironment.integerType))
           reporter.reportError ("Integer expression expected here", "",
-				ast.E.position);
+        ast.E.position);
         ast.type = ((ArrayTypeDenoter) vType).T;
       }
     }
@@ -879,27 +908,39 @@ public final class Checker implements Visitor {
 
     @Override
     public Object visitUntilCommand(UntilCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+      TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+      if (! eType.equals(StdEnvironment.booleanType))
+        reporter.reportError("Boolean expression expected here", "", ast.E.position);
+      ast.C.visit(this, null);
+      return null;
     }
 
     @Override
     public Object visitDoUntilCommand(DoUntilCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+      TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+      if (! eType.equals(StdEnvironment.booleanType))
+        reporter.reportError("Boolean expression expected here", "", ast.E.position);
+      ast.C.visit(this, null);
+      return null;
     }
 
     @Override
     public Object visitDoWhileCommand(DoWhileCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Object visitForCommand(ForCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+      TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+      if (! eType.equals(StdEnvironment.booleanType))
+        reporter.reportError("Boolean expression expected here", "", ast.E.position);
+      ast.C.visit(this, null);
+      return null;
     }
 
     @Override
     public Object visitElsIfCommand(ElsIfCommand ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        TypeDenoter eType = (TypeDenoter) ast.E1.visit(this, null);
+        if (! eType.equals(StdEnvironment.booleanType))
+          reporter.reportError("Boolean expression expected here", "", ast.E1.position);
+        ast.C.visit(this, null);
+        ast.C2.visit(this, null);
+        return null;
     }
 
     @Override
@@ -915,39 +956,87 @@ public final class Checker implements Visitor {
 
     @Override
     public Object visitArrayTypeDenoterStatic(ArrayTypeDenoterStatic ast, Object o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        ast.T = (TypeDenoter) ast.T.visit(this, null);
+        if (Integer.parseInt(ast.IL.spelling) > Integer.parseInt(ast.IL2.spelling))
+          reporter.reportError("second integer must be greater than the first one","",ast.getPosition());
+        else if ((Integer.valueOf(ast.IL.spelling).intValue()) == 0)
+          reporter.reportError ("arrays must not be empty", "", ast.IL.position);
+        return ast;
     }
 
     @Override
     public Object visitPrivateDeclaration(PrivateDeclaration ast, Object o) {
+        int privateDeclarations = 0;
+        int privateInDeclarations = 0;
+        
+        privateDeclarations = sumPrivateDeclarations(ast.D, privateDeclarations);
+        privateInDeclarations = sumPrivateInDeclarations(ast.D2, privateInDeclarations);
+        
         idTable.openScope();
         ast.D.visit(this, null);
         ast.D2.visit(this, null);
-        idTable.closeScope();
+        idTable.closePrivateScope(privateDeclarations, privateInDeclarations);
         return null;
+    }
+    
+    // Auxiliary function of visitPrivateDeclaration.
+    public int sumPrivateDeclarations(Declaration declaration_, int privateDeclarations) {
+        if (declaration_ instanceof SequentialDeclaration) {
+            sumPrivateDeclarations(((SequentialDeclaration) declaration_).D1, privateDeclarations);
+            privateDeclarations++;
+        } else if (declaration_ instanceof ProcFuncs) {
+            sumPrivateDeclarations(((ProcFuncs) declaration_).D1, privateDeclarations);
+            privateDeclarations++;
+        } else {
+            privateDeclarations++;
+        }
+        
+        return privateDeclarations;
+    }
+    
+    // Auxiliary function of visitPrivateDeclaration.
+    public int sumPrivateInDeclarations(Declaration declaration_, int privateInDeclarations) {
+        if (declaration_ instanceof SequentialDeclaration) {
+            sumPrivateInDeclarations(((SequentialDeclaration) declaration_).D1, privateInDeclarations);
+            privateInDeclarations++;
+        } else if (declaration_ instanceof ProcFuncs) {
+            sumPrivateInDeclarations(((ProcFuncs) declaration_).D1, privateInDeclarations);
+            privateInDeclarations++;
+        } else {
+            privateInDeclarations++;
+        }
+        
+        return privateInDeclarations;
     }
 
     public Object visitProcFuncs(ProcFuncs ast, Object o) {
+        //check if D2 is a ProcDeclaration or FuncDeclaration for add identifiers to idTable
         if (ast.D2 instanceof ProcDeclaration) {
             addIdentifierProc((ProcDeclaration) ast.D2);
         } else {
             addIdentifierFunc((FuncDeclaration) ast.D2);
         }
         Declaration dec = (Declaration) ast.D1;
+        //D1 can contain 0...n ProcFuncs, so this while command visits those declarations
         while (dec instanceof ProcFuncs){
             ProcFuncs pf = (ProcFuncs)dec;
+            // for each ProcFuncs adds identifiers in D2
             if (pf.D2 instanceof ProcDeclaration) {
                 addIdentifierProc((ProcDeclaration) pf.D2);
             } else {
                 addIdentifierFunc((FuncDeclaration) pf.D2);
             }
-            dec = pf.D1;
+            dec = pf.D1; // assing D1 to check if it is procFuncs again
         }
+        //check if D1 is a ProcDeclaration or FuncDeclaration for add identifiers to idTable
         if (dec instanceof ProcDeclaration) {
             addIdentifierProc((ProcDeclaration) dec);
         } else {
             addIdentifierFunc((FuncDeclaration) dec);
         }
+        
+        //same process, but for visit functions declared
+        // checks if dec is Proc or Func
         if (ast.D2 instanceof ProcDeclaration) {
             visitProc((ProcDeclaration) ast.D2, o);
         } else {
@@ -968,14 +1057,12 @@ public final class Checker implements Visitor {
         } else {
             visitFunc((FuncDeclaration) dec, o);
         }
-        //ast.D1.visit(this, null);
-        //ast.D2.visit(this, null);
         return null;
     }
 
     @Override
     public Object visitRecDeclaration(RecDeclaration ast, Object o) {
-        ast.D.visit(this, null);
+        ast.D.visit(this, null); //visit ProcFuncs 
         return null;
     }
     
@@ -986,8 +1073,8 @@ public final class Checker implements Visitor {
             reporter.reportError ("func identifier \"%\" already declared",
                     ast.I.spelling, ast.position);
         //ast.FPS.visit(this, true);
-        ast.FPS.visit(this, true);
-        ast.T = (TypeDenoter) ast.T.visit(this, null);
+        ast.FPS.visit(this, true); // visit FPS without adding ident in idTable
+        ast.T = (TypeDenoter) ast.T.visit(this, null); 
         return null;
     }
 
@@ -996,12 +1083,12 @@ public final class Checker implements Visitor {
         if (ast.duplicated)
             reporter.reportError ("proc identifier \"%\" already declared",
                             ast.I.spelling, ast.position);
-        ast.FPS.visit(this, true);
+        ast.FPS.visit(this, true); // visit FPS without adding ident in idTable
         return null;
     }
     
     public Object visitFunc (FuncDeclaration ast, Object o) {
-        //ast.T = (TypeDenoter) ast.T.visit(this, null);
+        // almost same fucntion for visitFuncDeclaration but without inserting id to idTable
         idTable.openScope();
         ast.FPS.visit(this, null);
         TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
@@ -1013,6 +1100,7 @@ public final class Checker implements Visitor {
     }
     
     public Object visitProc (ProcDeclaration ast, Object o) {
+        // almost same fucntion for visitProcDeclaration but without inserting id to idTable
         idTable.openScope();
         ast.FPS.visit(this, null);
         ast.C.visit(this, null);

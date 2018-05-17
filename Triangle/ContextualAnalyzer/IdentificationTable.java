@@ -15,6 +15,7 @@
 package Triangle.ContextualAnalyzer;
 
 import Triangle.AbstractSyntaxTrees.Declaration;
+import java.util.ArrayList;
 
 public final class IdentificationTable {
 
@@ -49,6 +50,29 @@ public final class IdentificationTable {
     }
     this.level--;
     this.latest = entry;
+  }
+  
+  // New
+  public void closePrivateScope (int privateDeclarations, int privateInDeclarations) {
+      IdEntry privateInDeclarations_ = this.latest;
+      
+      // "Private in" declarations
+      for (int i = privateInDeclarations; i > 1; i--) {
+          privateInDeclarations_.level--;
+          privateInDeclarations_ = privateInDeclarations_.previous;
+      }
+      
+      privateInDeclarations_.level--;
+      
+      IdEntry privateDeclarations_ = privateInDeclarations_.previous;
+      
+      // Private declarations
+      for (int i = privateDeclarations; i > 1; i--) {
+          privateDeclarations_ = privateDeclarations_.previous;
+      }
+      
+      privateInDeclarations_.previous = privateDeclarations_.previous;
+      this.level--;
   }
 
   // Makes a new entry in the identification table for the given identifier
